@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="20251511-001-create-fx-deals-table" author="zineb.machrouh">
+        <preConditions>
+            <not>
+                <tableExists tableName="fx_deals"/>
+            </not>
+        </preConditions>
+        <createTable tableName="fx_deals">
+            <column name="deal_id" type="NVARCHAR(100)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="from_currency" type="NVARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="to_currency" type="NVARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="deal_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="deal_amount" type="DECIMAL(19, 4)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="fx_deals"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
