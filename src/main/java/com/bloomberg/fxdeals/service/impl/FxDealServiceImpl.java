@@ -4,6 +4,7 @@ import com.bloomberg.fxdeals.dtos.req.FxDealReqDTO;
 import com.bloomberg.fxdeals.dtos.res.FxDealResDTO;
 import com.bloomberg.fxdeals.dtos.res.RejectedFxDealResDTO;
 import com.bloomberg.fxdeals.exception.FxDealBatchImportException;
+import com.bloomberg.fxdeals.exception.FxDealSingleImportException;
 import com.bloomberg.fxdeals.mappers.FxDealMapper;
 import com.bloomberg.fxdeals.repository.FxDealRepository;
 import com.bloomberg.fxdeals.service.FxDealService;
@@ -27,7 +28,20 @@ public class FxDealServiceImpl implements FxDealService {
     private final FxDealMapper mapper;
 
     @Override
-    public void importBatch(List<FxDealReqDTO> fxDealReqs) {
+    public FxDealResDTO importSingleDeal(FxDealReqDTO fxDealReq) {
+        var validationMsgs = validateImport(fxDealReq);
+        if (!validationMsgs.isEmpty()) {
+            throw new FxDealSingleImportException(RejectedFxDealResDTO.builder()
+                    .dealId(fxDealReq.dealId())
+                    .validationMsgs(validationMsgs)
+                    .build());
+        }
+        var savedFxDeal = repo.save(mapper.toEntity(fxDealReq));
+        return mapper.toDto(savedFxDeal);
+    }
+
+    @Override
+    public List<FxDealResDTO> importBatchDeals(List<FxDealReqDTO> fxDealReqs) {
         var rejectedFxDeals = new ArrayList<RejectedFxDealResDTO>();
         var  validatedFxDeals = new ArrayList<FxDealResDTO>();
         fxDealReqs.forEach(fxDealReq -> {
@@ -44,6 +58,7 @@ public class FxDealServiceImpl implements FxDealService {
         });
 
         if(rejectedFxDeals.isEmpty()) throw new FxDealBatchImportException(rejectedFxDeals, validatedFxDeals);
+        return validatedFxDeals;
     }
 
     private List<String> validateImport(FxDealReqDTO req) {
