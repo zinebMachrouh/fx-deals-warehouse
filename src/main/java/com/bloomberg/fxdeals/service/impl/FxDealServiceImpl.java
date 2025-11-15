@@ -53,7 +53,13 @@ public class FxDealServiceImpl implements FxDealService {
         validateDealAmountFormat(req.dealAmount(), validationMsgs);
         validateCurrency(req.fromCurrency(), true, validationMsgs);
         validateCurrency(req.toCurrency(), false, validationMsgs);
+        validateDealUniqueness(req.dealId(), validationMsgs);
         return validationMsgs;
+    }
+
+    private void validateDealUniqueness(String dealId, List<String> validationMsgs) {
+        if(repo.findByDealId(dealId).isPresent())
+            validationMsgs.add("Deal with id " + dealId + " already exists");
     }
 
     private void validateCurrency(String currency, boolean isFrom, List<String> validationMsgs) {
