@@ -1,18 +1,13 @@
 package com.bloomberg.fxdeals.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Entity
 @Table(name = "fx_deals")
 public class FxDeal {
