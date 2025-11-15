@@ -24,6 +24,7 @@ import static java.util.Objects.isNull;
 @Service
 @RequiredArgsConstructor
 public class FxDealServiceImpl implements FxDealService {
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final FxDealRepository repo;
     private final FxDealMapper mapper;
 
@@ -37,7 +38,7 @@ public class FxDealServiceImpl implements FxDealService {
                     .build());
         }
         var savedFxDeal = repo.save(mapper.toEntity(fxDealReq));
-        return mapper.toDto(savedFxDeal);
+        return mapper.toDTO(savedFxDeal);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class FxDealServiceImpl implements FxDealService {
             var validationMsgs = validateImport(fxDealReq);
             if(validationMsgs.isEmpty()){
                 var savedFxDeal = repo.save(mapper.toEntity(fxDealReq));
-                validatedFxDeals.add(mapper.toDto(savedFxDeal));
+                validatedFxDeals.add(mapper.toDTO(savedFxDeal));
             } else {
                 rejectedFxDeals.add(RejectedFxDealResDTO.builder()
                         .dealId(fxDealReq.dealId())
@@ -57,15 +58,20 @@ public class FxDealServiceImpl implements FxDealService {
             }
         });
 
-        if(rejectedFxDeals.isEmpty()) throw new FxDealBatchImportException(rejectedFxDeals, validatedFxDeals);
+        if(!rejectedFxDeals.isEmpty()) throw new FxDealBatchImportException(rejectedFxDeals, validatedFxDeals);
         return validatedFxDeals;
+    }
+
+    @Override
+    public List<FxDealResDTO> getAllDeals() {
+        return mapper.toDTOs(repo.findAll());
     }
 
     private List<String> validateImport(FxDealReqDTO req) {
         var validationMsgs = new ArrayList<String>();
         validateRequiredFields(req, validationMsgs);
         validateDealTimestampFormat(req.dealTimestamp(), validationMsgs);
-        validateDealAmountFormat(req.dealAmount(), validationMsgs);
+        validateDealAmount(req.dealAmount(), validationMsgs);
         validateCurrency(req.fromCurrency(), true, validationMsgs);
         validateCurrency(req.toCurrency(), false, validationMsgs);
         validateDealUniqueness(req.dealId(), validationMsgs);
@@ -85,9 +91,11 @@ public class FxDealServiceImpl implements FxDealService {
         }
     }
 
-    private void validateDealAmountFormat(String dealAmount, List<String> validationMsgs) {
+    private void validateDealAmount(String dealAmount, List<String> validationMsgs) {
         try {
-            new BigDecimal(dealAmount);
+            var amount = new BigDecimal(dealAmount);
+            if(amount.compareTo(BigDecimal.ZERO) < 0)
+                validationMsgs.add("Deal amount must be a positive number");
         } catch (NumberFormatException e) {
             validationMsgs.add("Deal amount must be a valid decimal number");
         }
@@ -95,7 +103,7 @@ public class FxDealServiceImpl implements FxDealService {
 
     private void validateDealTimestampFormat(String dealTimestamp, List<String> validationMsgs) {
         try {
-            LocalDateTime.parse(dealTimestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            LocalDateTime.parse(dealTimestamp, FORMATTER);
         } catch (DateTimeParseException e) {
             validationMsgs.add("Invalid deal timestamp format, should be yyyy-MM-dd HH:mm:ss");
         }

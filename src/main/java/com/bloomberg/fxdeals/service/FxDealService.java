@@ -8,4 +8,5 @@ import java.util.List;
 public interface FxDealService {
     FxDealResDTO importSingleDeal(FxDealReqDTO fxDeal);
     List<FxDealResDTO> importBatchDeals(List<FxDealReqDTO> fxDeals);
+    List<FxDealResDTO> getAllDeals();
 }

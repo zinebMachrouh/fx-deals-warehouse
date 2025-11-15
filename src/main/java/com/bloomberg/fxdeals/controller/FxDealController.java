@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/deals")
@@ -17,5 +19,17 @@ public class FxDealController {
     @ResponseStatus(HttpStatus.CREATED)
     public FxDealResDTO importSingleDeal(@RequestBody FxDealReqDTO fxDealReq) {
         return service.importSingleDeal(fxDealReq);
+    }
+
+    @PostMapping("/import/batch")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<FxDealResDTO> importBatchDeals(@RequestBody List<FxDealReqDTO> fxDealReqs) {
+        return service.importBatchDeals(fxDealReqs);
+    }
+
+
+    @GetMapping
+    public List<FxDealResDTO> getAllDeals() {
+        return service.getAllDeals();
     }
 }

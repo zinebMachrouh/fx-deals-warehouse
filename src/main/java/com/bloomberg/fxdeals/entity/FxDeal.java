@@ -6,8 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@Getter
+@Data
 @Entity
 @Table(name = "fx_deals")
 public class FxDeal {
