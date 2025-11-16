@@ -1,0 +1,108 @@
+{
+	"info": {
+		"_postman_id": "a655a473-39dd-49bd-82c6-773a2f1c8a0a",
+		"name": "Fx Deal Warehouse",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33286297"
+	},
+	"item": [
+		{
+			"name": "Get All Deals",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}",
+					"host": [
+						"{{url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import Single Deal",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"dealId\": \"D-2025-001231\",\r\n  \"fromCurrency\": \"USD\",\r\n  \"toCurrency\": \"EUR\",\r\n  \"dealTimestamp\": \"2025-01-15 14:32:10\",\r\n  \"dealAmount\": \"150000.75\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/import/single",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"import",
+						"single"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import Batch Deals",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"dealId\": \"D-2025-0012311\",\r\n        \"fromCurrency\": \"USD\",\r\n        \"toCurrency\": \"EUR\",\r\n        \"dealTimestamp\": \"2025-01-15 14:32:10\",\r\n        \"dealAmount\": \"150000.75\"\r\n    }\r\n]\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/import/single",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"import",
+						"single"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://localhost:8080/api/v1/deals"
+		}
+	]
+}
