@@ -1,13 +1,12 @@
 package com.bloomberg.fxdeals;
 
+import com.bloomberg.fxdeals.config.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class FxDealsDataWarehouseApplicationTests {
+
+class FxDealsDataWarehouseApplicationTests extends AbstractIntegrationTest {
 
 	@Test
-	void contextLoads() {
-	}
+	void contextLoads() {}
 
 }
