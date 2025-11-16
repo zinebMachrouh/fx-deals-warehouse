@@ -14,6 +14,39 @@ services:
       test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER:-admin}" ]
       interval: 5s
       retries: 5
+      start_period: 10s
+
+  fx-deals-warehouse:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME:-fx-deals-warehouse}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER:-admin}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-admin}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health/liveness || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  k6:
+    image: grafana/k6:0.51.0
+    profiles: ["perf"]
+    environment:
+      - BASE_URL=http://fx-deals-warehouse:8080
+    volumes:
+      - ./perf/k6:/scripts
+    depends_on:
+      fx-deals-warehouse:
+        condition: service_healthy
+    entrypoint: ["k6"]
+    command: ["run", "/scripts/smoke-import-single.js"]
 
 volumes:
   db-data:
