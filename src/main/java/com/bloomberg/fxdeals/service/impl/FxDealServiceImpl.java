@@ -18,6 +18,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 
@@ -68,61 +69,85 @@ public class FxDealServiceImpl implements FxDealService {
     }
 
     private List<String> validateImport(FxDealReqDTO req) {
-        var validationMsgs = new ArrayList<String>();
-        validateRequiredFields(req, validationMsgs);
-        validateDealTimestampFormat(req.dealTimestamp(), validationMsgs);
-        validateDealAmount(req.dealAmount(), validationMsgs);
-        validateCurrency(req.fromCurrency(), true, validationMsgs);
-        validateCurrency(req.toCurrency(), false, validationMsgs);
-        validateDealUniqueness(req.dealId(), validationMsgs);
-        return validationMsgs;
+        return Stream.of(
+                validateDealId(req.dealId()),
+                validateFromCurrency(req.fromCurrency()),
+                validateToCurrency(req.toCurrency()),
+                validateCurrenciesNotSame(req),
+                validateDealTimestamp(req.dealTimestamp()),
+                validateDealAmount(req.dealAmount())
+        ).filter(msg -> !msg.isBlank()).toList();
     }
 
-    private void validateDealUniqueness(String dealId, List<String> validationMsgs) {
-        if(repo.findByDealId(dealId).isPresent())
-            validationMsgs.add("Deal with id " + dealId + " already exists");
+    private String validateDealTimestamp(String dealTimestamp) {
+        if (isBlank(dealTimestamp))
+            return "Deal timestamp is required";
+        else {
+            try {
+                LocalDateTime.parse(dealTimestamp, FORMATTER);
+            } catch (DateTimeParseException e) {
+                return "Invalid deal timestamp format, should be yyyy-MM-dd HH:mm:ss";
+            }
+        }
+        return "";
     }
 
-    private void validateCurrency(String currency, boolean isFrom, List<String> validationMsgs) {
+    private String validateCurrenciesNotSame(FxDealReqDTO req) {
+        if(!isBlank(req.fromCurrency()) && !isBlank(req.toCurrency())
+            && req.fromCurrency().equals(req.toCurrency()))
+            return "From currency and To currency must be different";
+        return "";
+    }
+
+    private String validateFromCurrency(String fromCurrency) {
+        if(isBlank(fromCurrency))
+            return "From currency is required";
+        else {
+            try {
+                Currency.getInstance(fromCurrency);
+            } catch (IllegalArgumentException e) {
+                return "From currency must be a valid ISO currency";
+            }
+        }
+        return "";
+    }
+
+    private String validateToCurrency(String toCurrency) {
+        if(isBlank(toCurrency))
+            return "To currency is required";
         try {
-            Currency.getInstance(currency);
+            Currency.getInstance(toCurrency);
         } catch (IllegalArgumentException e) {
-            validationMsgs.add(isFrom ? "From currency must be a valid ISO currency" : "To currency must be a valid ISO currency");
+            return "To currency must be a valid ISO currency";
         }
+        return "";
     }
 
-    private void validateDealAmount(String dealAmount, List<String> validationMsgs) {
-        try {
-            var amount = new BigDecimal(dealAmount);
-            if(amount.compareTo(BigDecimal.ZERO) < 0)
-                validationMsgs.add("Deal amount must be a positive number");
-        } catch (NumberFormatException e) {
-            validationMsgs.add("Deal amount must be a valid decimal number");
-        }
+    private String validateDealId(String dealId) {
+        if(isBlank(dealId))
+            return "Deal Id is required";
+        else if(repo.existsById(dealId))
+            return "Deal with id " + dealId + " already exists";
+
+        return "";
     }
 
-    private void validateDealTimestampFormat(String dealTimestamp, List<String> validationMsgs) {
-        try {
-            LocalDateTime.parse(dealTimestamp, FORMATTER);
-        } catch (DateTimeParseException e) {
-            validationMsgs.add("Invalid deal timestamp format, should be yyyy-MM-dd HH:mm:ss");
+    private String validateDealAmount(String dealAmount) {
+        if (isBlank(dealAmount))
+            return "Deal amount is required";
+        else {
+            try {
+                var amount = new BigDecimal(dealAmount);
+                if(amount.compareTo(BigDecimal.ZERO) <= 0)
+                    return "Deal amount must be a positive number";
+            } catch (NumberFormatException e) {
+                return "Deal amount must be a valid decimal number";
+            }
         }
-    }
-
-    private void validateRequiredFields(FxDealReqDTO req, List<String> validationMsgs) {
-        if(isBlank(req.dealId()))
-            validationMsgs.add("Deal Id is required");
-        if(isBlank(req.fromCurrency()))
-            validationMsgs.add("From currency is required");
-        if(isBlank(req.toCurrency()))
-            validationMsgs.add("To currency is required");
-        if(isBlank(req.dealTimestamp()))
-            validationMsgs.add("Deal timestamp is required");
-        if(isBlank(req.dealAmount()))
-            validationMsgs.add("Deal amount is required");
+        return "";
     }
 
     private boolean isBlank(String string) {
-        return isNull(string)  || string.isBlank();
+        return isNull(string) || string.isBlank();
     }
 }
