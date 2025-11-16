@@ -12,3 +12,23 @@ spring:
 
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.bloomberg.fxdeals: INFO
+    com.bloomberg.fxdeals.controller: INFO
+    com.bloomberg.fxdeals.service: INFO
+    com.bloomberg.fxdeals.repository: INFO
+    com.bloomberg.fxdeals.config: INFO
+    org.springframework.web: WARN
+    org.springframework.boot: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+

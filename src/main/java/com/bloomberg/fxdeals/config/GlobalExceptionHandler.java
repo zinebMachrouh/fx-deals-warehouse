@@ -19,21 +19,36 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public Map<String, String> handleGeneralException(Exception ex) {
-        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        log.error("Unexpected internal server error occurred - Type: {}, Message: {}",
+                  ex.getClass().getSimpleName(),
+                  ex.getMessage(),
+                  ex);
         return Map.of("error", ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(FxDealBatchImportException.class)
     public Map<String, Object> handleFxDealBatchImportException(FxDealBatchImportException ex) {
+        var rejectedDeals = ex.getRejectedFxDeals();
+        var savedDeals = ex.getSavedDeals();
         var errorMsg = "All fx deals in the batch failed to be validated";
+
         Map<String, Object> errorRes = new LinkedHashMap<>();
-        errorRes.put("rejectedDeals", ex.getRejectedFxDeals());
-        if (!ex.getSavedDeals().isEmpty()) {
+        errorRes.put("rejectedDeals", rejectedDeals);
+
+        if (!savedDeals.isEmpty()) {
             errorMsg = "Some fx deals in the batch failed to be validated";
-            errorRes.put("savedDeals", ex.getSavedDeals());
+            errorRes.put("savedDeals", savedDeals);
+            log.error("Batch import partial failure - {} deals rejected, {} deals saved. Rejected deal IDs: {}",
+                      rejectedDeals.size(),
+                      savedDeals.size(),
+                      rejectedDeals.stream().map(d -> d.dealId()).toList());
+        } else {
+            log.error("Batch import complete failure - All {} deals rejected. Rejected deal IDs: {}",
+                      rejectedDeals.size(),
+                      rejectedDeals.stream().map(d -> d.dealId()).toList());
         }
-        log.error(errorMsg, ex);
+
         errorRes.put("error", errorMsg);
         return errorRes;
     }
@@ -41,10 +56,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(FxDealSingleImportException.class)
     public Map<String, Object> handleFxDealSingleImportException(FxDealSingleImportException ex) {
+        var rejectedDeal = ex.getRejectedFxDeal();
         var errorMsg = "Fx deal failed to be validated";
-        log.error(errorMsg, ex);
+        log.error("Deal ID: {} - {} - Validation errors: {}",
+                  rejectedDeal.dealId(),
+                  errorMsg,
+                  rejectedDeal.validationMsgs());
         return Map.of(
                 "error", errorMsg,
-                "rejectedDeal", ex.getRejectedFxDeal());
+                "rejectedDeal", rejectedDeal);
     }
 }
