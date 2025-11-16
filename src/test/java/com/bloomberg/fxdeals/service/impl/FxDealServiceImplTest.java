@@ -1026,7 +1026,7 @@ class FxDealServiceImplTest {
         @DisplayName("Should handle empty batch list")
         void shouldHandleEmptyBatchList() {
             // Act
-            List<FxDealResDTO> results = service.importBatchDeals(Arrays.asList());
+            List<FxDealResDTO> results = service.importBatchDeals(List.of());
 
             // Assert
             assertThat(results).isEmpty();
@@ -1094,8 +1094,8 @@ class FxDealServiceImplTest {
         @DisplayName("Should return empty list when no deals exist")
         void shouldReturnEmptyListWhenNoDeals() {
             // Arrange
-            when(repository.findAll()).thenReturn(Arrays.asList());
-            when(mapper.toDTOs(any())).thenReturn(Arrays.asList());
+            when(repository.findAll()).thenReturn(List.of());
+            when(mapper.toDTOs(any())).thenReturn(List.of());
 
             // Act
             List<FxDealResDTO> results = service.getAllDeals();
