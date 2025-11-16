@@ -116,13 +116,7 @@ Content-Type: application/json
 GET /api/v1/deals
 ```
 
-## 📊 Database
 
-- **PostgreSQL 18.1** (Alpine)
-- **Port**: 15432 (configurable via DB_PORT)
-- **Database**: fx-deals-warehouse
-- **Username**: admin (configurable via DB_USER)
-- **Password**: admin (configurable via DB_PASSWORD)
 
 ### Schema Management
 Database schema is managed using Liquibase. Migration scripts are located in `src/main/resources/db/changelog/`.
